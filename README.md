@@ -1,100 +1,91 @@
-# vinext-starter
+# Mira
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Mira is a private, locally hosted AI companion chat powered by Ollama. It offers a focused text conversation with adjustable personality, mood, and memories while keeping the default model connection on your own computer and its safety boundaries fixed on the server.
 
-## Prerequisites
+## Features
 
-- Node.js `>=22.13.0`
+- Freeform text chat with no preset reply choices
+- Soft, playful, and focused conversation modes
+- Editable companion name, personality, and vibe
+- Local memories that can be added or removed at any time
+- Ollama integration through an OpenAI-compatible API
+- Lightweight fallback replies when the model is unavailable
+- Responsive interface for desktop and mobile
 
-## Quick Start
+## Requirements
 
-```bash
-npm install
-npm run dev
-npm run build
+- [Node.js](https://nodejs.org/) 22.13 or newer
+- [Ollama](https://ollama.com/) installed locally
+- An Ollama model such as `llama3.1:8b`
+
+## Getting Started
+
+1. Download the default model:
+
+   ```powershell
+   ollama pull llama3.1:8b
+   ```
+
+2. Start Ollama if it is not already running:
+
+   ```powershell
+   ollama serve
+   ```
+
+   If Ollama reports that port `11434` is already in use, it is probably already running.
+
+3. Install the project dependencies:
+
+   ```powershell
+   npm install
+   ```
+
+4. Create your local environment file:
+
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
+
+5. Start the app:
+
+   ```powershell
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Model Configuration
+
+The default configuration connects to Ollama at `http://localhost:11434/v1` and uses `llama3.1:8b`:
+
+```env
+LOCAL_LLM_BASE_URL=http://localhost:11434/v1
+LOCAL_LLM_MODEL=llama3.1:8b
+LOCAL_LLM_API_KEY=ollama
 ```
 
-This starter does not use `wrangler.jsonc`.
+Change `LOCAL_LLM_MODEL` in `.env.local` to use another installed model. The API key value is a placeholder for local Ollama and is not a secret. You can also point `LOCAL_LLM_BASE_URL` at another OpenAI-compatible chat-completions server.
 
-## Included Shape
+## Privacy
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+By default, model requests are sent only to the Ollama server running on your computer. Companion settings and saved memories are stored in the browser's local storage. Chat messages remain in the current browser session and are not written to the project database.
 
-## Workspace Auth Headers
+If you configure a remote model URL, conversation content will be sent to that provider. Review its privacy policy before doing so. Keep real API keys in `.env.local`; environment files are ignored by Git.
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+## Project Commands
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```powershell
+npm run dev      # Start local development
+npm run build    # Create a production build
+npm run start    # Run the production build
+npm run lint     # Check the source code
+npm test         # Build and run the rendered HTML test
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Content Boundaries
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+Mira is designed as an adult, consensual fictional companion. Non-overridable server checks reject content involving minors, coercion, non-consent, and sexual impersonation of real people. They also provide a deterministic crisis response and replace model replies that pressure the user to isolate from real-world support. These checks run separately from the model prompt, so changing the character configuration cannot disable them.
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+## Technology
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Built with React, Vinext, Vite, and the Ollama-compatible chat completions API.

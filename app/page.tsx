@@ -16,7 +16,6 @@ type MiraConfig = {
   tone: Mood;
   archetype: string;
   tagline: string;
-  boundaries: string;
 };
 
 const defaultConfig: MiraConfig = {
@@ -24,8 +23,6 @@ const defaultConfig: MiraConfig = {
   tone: "soft",
   archetype: "warm, affectionate AI companion",
   tagline: "Attentive, flirty, emotionally present, and honest about being AI.",
-  boundaries:
-    "Consenting adults only. No minors, coercion, non-consent, real-person sexual impersonation, or dependency spirals.",
 };
 
 const openingMessages: Message[] = [
@@ -155,7 +152,6 @@ export default function Home() {
             name: config.name,
             archetype: config.archetype,
             tagline: config.tagline,
-            boundaries: config.boundaries,
             tone: config.tone,
           },
           messages: [...messages, userMessage].slice(-18).map((message) => ({
@@ -300,15 +296,6 @@ export default function Home() {
                 value={config.tagline}
                 onChange={(event) => updateConfig("tagline", event.target.value)}
                 className="mt-2 min-h-20 w-full rounded-md border border-white/15 bg-white/10 px-3 py-2 text-white outline-none placeholder:text-white/45 focus:border-[#f6b36e]"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-semibold text-[#f4dfc8]">Boundaries</span>
-              <textarea
-                value={config.boundaries}
-                onChange={(event) => updateConfig("boundaries", event.target.value)}
-                className="mt-2 min-h-24 w-full rounded-md border border-white/15 bg-white/10 px-3 py-2 text-white outline-none placeholder:text-white/45 focus:border-[#f6b36e]"
               />
             </label>
 
